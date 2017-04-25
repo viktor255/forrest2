@@ -23,10 +23,10 @@ public class PotManagerImpl implements PotManager {
 
     @Override
     public void createPot(Pot pot) {
-        SimpleJdbcInsert insertPot = new SimpleJdbcInsert(jdbc).withTableName("pots").usingGeneratedKeyColumns("id");
+        SimpleJdbcInsert insertPot = new SimpleJdbcInsert(jdbc).withTableName("pot").usingGeneratedKeyColumns("id");
         Map<String, Object> parameters = new HashMap<>(2);
         parameters.put("row", Integer.toString(pot.getRow()));
-        parameters.put("column", Integer.toString(pot.getColumn()));
+        parameters.put("col", Integer.toString(pot.getColumn()));
         parameters.put("capacity", Integer.toString(pot.getCapacity()));
         parameters.put("note", pot.getCapacity());
         Number id = insertPot.executeAndReturnKey(parameters);
@@ -36,7 +36,7 @@ public class PotManagerImpl implements PotManager {
     @Override
     public void updatePot(Pot pot) {
         jdbc.update("UPDATE pot SET row=?, col=?, capacity=?, note=? WHERE id=?",
-                pot.getRow(), pot.getColumn(), pot.getCapacity(), pot.getNote());
+                pot.getRow(), pot.getColumn(), pot.getCapacity(), pot.getNote(), pot.getId());
     }
 
     @Override
