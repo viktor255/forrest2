@@ -22,6 +22,7 @@ public class TreeServlet extends HttpServlet {
 
     private static final String LIST_JSP = "/list.jsp";
     public static final String URL_MAPPING = "/trees";
+    public static final String UPDATE_MAPPING = "/update";
 
     private final static Logger log = LoggerFactory.getLogger(TreeServlet.class);
 
@@ -38,15 +39,16 @@ public class TreeServlet extends HttpServlet {
         //action specified by pathInfo
         String action = request.getPathInfo();
         log.debug("POST ... {}",action);
+
         switch (action) {
             case "/add":
                 //getting POST parameters from form
-                String id = request.getParameter("id");
+//                String id = request.getParameter("id");
                 String name = request.getParameter("name");
                 String type = request.getParameter("treeType");
                 String isProtected = request.getParameter("isProtected");
                 //form data validity check
-                if (name == null || name.length() == 0 || type == null || type.length() == 0) {
+                if (name == null || name.length() == 0 || type == null || type.length() == 0 || isProtected == null) {
                     request.setAttribute("chyba", "Je nutné vyplnit všechny hodnoty !");
                     log.debug("form data invalid");
                     showTreesList(request, response);
@@ -55,7 +57,7 @@ public class TreeServlet extends HttpServlet {
                 //form data processing - storing to database
                 try {
                    // Tree tree = new Tree(null, name, author);
-                    Tree tree = new Tree(Long.decode(id),name,type,true);
+                    Tree tree = new Tree(null,name,type,Boolean.valueOf(isProtected));
                     getTreeManager().createTree(tree);
                     //redirect-after-POST protects from multiple submission
                     log.debug("redirecting after POST");
@@ -79,8 +81,34 @@ public class TreeServlet extends HttpServlet {
                     return;
                 }
             case "/update":
-                //TODO
-                return;
+                //getting POST parameters from form
+                Long idU = Long.valueOf(request.getParameter("id"));
+                String nameU = request.getParameter("name");
+                String typeU = request.getParameter("treeType");
+                String isProtectedU = request.getParameter("isProtected");
+                //form data validity check
+                if (nameU == null || nameU.length() == 0 || typeU == null || typeU.length() == 0 || idU == null || isProtectedU == null) {
+                    request.setAttribute("chyba", "Je nutné vyplnit všechny hodnoty !");
+                    log.debug("form data invalid");
+                    showTreesList(request, response);
+                    return;
+                }
+                //form data processing - storing to database
+                try {
+                    // Tree tree = new Tree(null, name, author);
+                    Tree tree = new Tree(idU,nameU,typeU,Boolean.valueOf(isProtectedU));
+                    getTreeManager().updateTree(tree);
+                    //redirect-after-POST protects from multiple submission
+                    log.debug("redirecting after POST");
+                    response.sendRedirect(request.getContextPath()+URL_MAPPING);
+                    return;
+                } catch (Exception e) {
+                    log.error("Cannot update tree", e);
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+                    return;
+                }
+
+
             default:
                 log.error("Unknown action " + action);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown action " + action);

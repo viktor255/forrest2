@@ -78,7 +78,7 @@ public class TreeManagerImplTest {
         Tree tree = sampleWilhelmTreeBuilder().build();
         manager.createTree(tree);
 
-        Long treeId = tree.getTreeId();
+        Long treeId = tree.getId();
         assertThat(treeId).isNotNull();
 
         assertThat(manager.getTree(treeId))
@@ -141,10 +141,10 @@ public class TreeManagerImplTest {
         updateOperation.callOn(treeForUpdate);
 
         manager.updateTree(treeForUpdate);
-        assertThat(manager.getTree(treeForUpdate.getTreeId()))
+        assertThat(manager.getTree(treeForUpdate.getId()))
                 .isEqualToComparingFieldByField(treeForUpdate);
         // Check if updates didn't affected other records
-        assertThat(manager.getTree(anotherTree.getTreeId()))
+        assertThat(manager.getTree(anotherTree.getId()))
                 .isEqualToComparingFieldByField(anotherTree);
     }
 
@@ -201,13 +201,13 @@ public class TreeManagerImplTest {
         manager.createTree(wilhelm);
         manager.createTree(bob);
 
-        assertThat(manager.getTree(wilhelm.getTreeId())).isNotNull();
-        assertThat(manager.getTree(bob.getTreeId())).isNotNull();
+        assertThat(manager.getTree(wilhelm.getId())).isNotNull();
+        assertThat(manager.getTree(bob.getId())).isNotNull();
 
         manager.deleteTree(wilhelm);
 
-        assertThat(manager.getTree(wilhelm.getTreeId())).isNull();
-        assertThat(manager.getTree(bob.getTreeId())).isNotNull();
+        assertThat(manager.getTree(wilhelm.getId())).isNull();
+        assertThat(manager.getTree(bob.getId())).isNotNull();
 
     }
 
@@ -254,7 +254,7 @@ public class TreeManagerImplTest {
     public void getTreeWithSqlExceptionThrown() throws SQLException {
         Tree tree = sampleBobTreeBuilder().build();
         manager.createTree(tree);
-        testExpectedServiceFailureException((treeManager) -> treeManager.getTree(tree.getTreeId()));
+        testExpectedServiceFailureException((treeManager) -> treeManager.getTree(tree.getId()));
     }
 
     @Test
@@ -277,7 +277,7 @@ public class TreeManagerImplTest {
         Tree anotherTree = newTree("Ilona", "dub", false);
         manager.createTree(tree);
         manager.createTree(anotherTree);
-        Long treeId = tree.getTreeId();
+        Long treeId = tree.getId();
 
         tree = manager.getTree(treeId);
         tree.setTreeType("Kveta");
@@ -301,7 +301,7 @@ public class TreeManagerImplTest {
         assertEquals(false, tree.isProtected());
 
         // Check if updates didn't affected other records
-        assertDeepEquals(anotherTree, manager.getTree(anotherTree.getTreeId()));
+        assertDeepEquals(anotherTree, manager.getTree(anotherTree.getId()));
     }
 
     @Test
@@ -310,11 +310,11 @@ public class TreeManagerImplTest {
         Tree t2 = newTree("Juraj", "lipa", false);
         manager.createTree(t1);
         manager.createTree(t2);
-        assertNotNull(manager.getTree(t1.getTreeId()));
-        assertNotNull(manager.getTree(t2.getTreeId()));
+        assertNotNull(manager.getTree(t1.getId()));
+        assertNotNull(manager.getTree(t2.getId()));
         manager.deleteTree(t1);
-        assertNull(manager.getTree(t1.getTreeId()));
-        assertNotNull(manager.getTree(t2.getTreeId()));
+        assertNull(manager.getTree(t1.getId()));
+        assertNotNull(manager.getTree(t2.getId()));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -369,12 +369,12 @@ public class TreeManagerImplTest {
     }
 
     private void assertDeepEquals(Tree expected, Tree actual) {
-        assertEquals(expected.getTreeId(), actual.getTreeId());
+        assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getName(), actual.getName());
         assertEquals(expected.isProtected(), actual.isProtected());
     }
 
-    private static final Comparator<Tree> TREE_ID_COMPARATOR = Comparator.comparing(Tree::getTreeId);
+    private static final Comparator<Tree> TREE_ID_COMPARATOR = Comparator.comparing(Tree::getId);
 */
 
 }

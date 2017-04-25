@@ -6,23 +6,29 @@ import java.util.Objects;
  * @author Jakub Bohos 422419
  */
 public class Tree {
-    private Long treeId;
+    private Long id;
     private String name;
     private String treeType;
-    private boolean isProtected;
+    private boolean protectedByLaw;
 
     public Tree() {
     }
 
-    public Tree(Long treeId, String name, String treeType, boolean isProtected) {
-        this.treeId = treeId;
+    public Tree(String name, String treeType, boolean protectedByLaw) {
         this.name = name;
         this.treeType = treeType;
-        this.isProtected = isProtected;
+        this.protectedByLaw = protectedByLaw;
     }
 
-    public Long getTreeId() {
-        return treeId;
+    public Tree(Long id, String name, String treeType, boolean isProtected) {
+        this.id = id;
+        this.name = name;
+        this.treeType = treeType;
+        this.protectedByLaw = isProtected;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getName() {
@@ -33,8 +39,8 @@ public class Tree {
         return treeType;
     }
 
-    public void setTreeId(Long id) {
-        this.treeId = id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setName(String name) {
@@ -46,19 +52,19 @@ public class Tree {
     }
 
     public boolean isProtected() {
-        return isProtected;
+        return protectedByLaw;
     }
 
     public void setProtected(boolean isProtected) {
-        this.isProtected = isProtected;
+        this.protectedByLaw = isProtected;
     }
 
     public String toString() {
         return "Tree{"
-                + "id=" + treeId
+                + "id=" + id
                 + ", name=" + name
                 + ", treeType=" + treeType
-                + ", isProtected=" + isProtected
+                + ", isProtected=" + protectedByLaw
                 + '}';
     }
 
@@ -80,15 +86,15 @@ public class Tree {
             return false;
         }
         final Tree other = (Tree) obj;
-        if (obj != this && this.treeId == null) {
+        if (obj != this && this.id == null) {
             return false;
         }
-        return Objects.equals(this.treeId, other.treeId);
+        return Objects.equals(this.id, other.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.treeId);
+        return Objects.hash(this.id);
     }
 
 }

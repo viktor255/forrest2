@@ -3,7 +3,6 @@ package cz.muni.fi.pv168.forrest;
 import cz.muni.fi.pv168.forrest.common.DBUtils;
 import cz.muni.fi.pv168.forrest.common.IllegalEntityException;
 import cz.muni.fi.pv168.forrest.common.ServiceFailureException;
-import sun.font.TrueTypeFont;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -46,7 +45,7 @@ public class PlanterManagerImpl implements PlanterManager {
         if (tree == null) {
             throw new IllegalArgumentException("tree is null");
         }
-        if (tree.getTreeId() == null) {
+        if (tree.getId() == null) {
             throw new IllegalEntityException("tree id is null");
         }
         Connection conn = null;
@@ -57,7 +56,7 @@ public class PlanterManagerImpl implements PlanterManager {
                     "SELECT Pot.potId, row, collumn, capacity, note " +
                             "FROM Pot JOIN Tree ON Pot.potId = Tree.potId " +
                             "WHERE Tree.id = ?");
-            st.setLong(1, tree.getTreeId());
+            st.setLong(1, tree.getId());
             return new Pot(1L,1, 1,1, "sdf");
 //            return PotManagerImpl.executeQueryForSinglePot(st);
         } catch (SQLException ex) {
@@ -177,7 +176,7 @@ public class PlanterManagerImpl implements PlanterManager {
         if (tree == null) {
             throw new IllegalArgumentException("tree is null");
         }
-        if (tree.getTreeId() == null) {
+        if (tree.getId() == null) {
             throw new IllegalEntityException("tree id is null");
         }
         Connection conn = null;
@@ -192,7 +191,7 @@ public class PlanterManagerImpl implements PlanterManager {
             updateSt = conn.prepareStatement(
                     "UPDATE Tree SET potId = ? WHERE id = ? AND potId IS NULL");
             updateSt.setLong(1, pot.getId());
-            updateSt.setLong(2, tree.getTreeId());
+            updateSt.setLong(2, tree.getId());
             int count = updateSt.executeUpdate();
             if (count == 0) {
                 throw new IllegalEntityException("Tree " + tree + " not found or it is already placed in some pot");
@@ -243,7 +242,7 @@ public class PlanterManagerImpl implements PlanterManager {
         if (tree == null) {
             throw new IllegalArgumentException("tree is null");
         }
-        if (tree.getTreeId() == null) {
+        if (tree.getId() == null) {
             throw new IllegalEntityException("tree id is null");
         }
         Connection conn = null;
@@ -255,7 +254,7 @@ public class PlanterManagerImpl implements PlanterManager {
             conn.setAutoCommit(false);
             st = conn.prepareStatement(
                     "UPDATE Tree SET potId = NULL WHERE id = ? AND potId = ?");
-            st.setLong(1, tree.getTreeId());
+            st.setLong(1, tree.getId());
             st.setLong(2, pot.getId());
             int count = st.executeUpdate();
             DBUtils.checkUpdatesCount(count, tree, false);

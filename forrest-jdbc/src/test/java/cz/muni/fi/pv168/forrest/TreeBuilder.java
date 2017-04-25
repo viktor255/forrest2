@@ -37,7 +37,7 @@ public class TreeBuilder {
      */
     public Tree build() {
         Tree tree = new Tree();
-        tree.setTreeId(treeId);
+        tree.setId(treeId);
         tree.setName(name);
         tree.setTreeType(treeType);
         tree.setProtected(isProtected);

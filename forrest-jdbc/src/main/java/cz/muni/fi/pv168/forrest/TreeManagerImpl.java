@@ -30,28 +30,28 @@ public class TreeManagerImpl implements TreeManager {
         parameters.put("treeType", tree.getTreeType());
         parameters.put("isProtected", tree.isProtected());
         Number id = insertTree.executeAndReturnKey(parameters);
-        tree.setTreeId(id.longValue());
+        tree.setId(id.longValue());
     }
 
     @Override
     public void updateTree(Tree tree) {
-        jdbc.update("UPDATE tree SET name=?, treeType=?, isProtected=? WHERE id=?",
-                tree.getName(), tree.getTreeType(), tree.isProtected());
+        jdbc.update("UPDATE trees SET name=?, treeType=?, isProtected=? WHERE id=?",
+                tree.getName(), tree.getTreeType(), tree.isProtected(), tree.getId());
     }
 
     @Override
     public void deleteTree(Tree tree) {
-        jdbc.update("DELETE FROM tree WHERE id=?", tree.getTreeId());
+        jdbc.update("DELETE FROM trees WHERE id=?", tree.getId());
     }
 
     @Override
     public List<Tree> findAllTrees() {
-        return jdbc.query("SELECT * FROM tree ", treeMapper);
+        return jdbc.query("SELECT * FROM trees ", treeMapper);
     }
 
     @Override
     public Tree getTree(Long id) {
-        return jdbc.queryForObject("SELECT * FROM tree WHERE id=?", treeMapper, id);
+        return jdbc.queryForObject("SELECT * FROM trees WHERE id=?", treeMapper, id);
     }
 
     private RowMapper<Tree> treeMapper = (RowMapper<Tree>) (rs, rowNum) ->

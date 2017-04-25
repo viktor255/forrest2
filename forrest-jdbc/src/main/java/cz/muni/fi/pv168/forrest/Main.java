@@ -38,11 +38,14 @@ public class Main {
 
         List<Tree> allTrees = treeManager.findAllTrees();
         System.out.println("allTrees = " + allTrees);
+        treeManager.createTree(new Tree("test", "test", false));
+        allTrees = treeManager.findAllTrees();
+        System.out.println("allTrees = " + allTrees);
 
-        PotManager potManager = new PotManagerImpl(dataSource);
-
-        List<Pot> allPots = potManager.findAllPots();
-        System.out.println("allPots = " + allPots);
+//        PotManager potManager = new PotManagerImpl(dataSource);
+//
+//        List<Pot> allPots = potManager.findAllPots();
+//        System.out.println("allPots = " + allPots);
 
     }
 }
