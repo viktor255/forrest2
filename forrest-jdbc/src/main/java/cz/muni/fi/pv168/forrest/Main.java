@@ -20,7 +20,7 @@ public class Main {
         BasicDataSource bds = new BasicDataSource();
         //set JDBC driver and URL
         bds.setDriverClassName(EmbeddedDriver.class.getName());
-        bds.setUrl("jdbc:derby:memory:booksDB;create=true");
+        bds.setUrl("jdbc:derby:memory:treesDB;create=true");
         //populate db with tables and data
         new ResourceDatabasePopulator(
                 new ClassPathResource("schema-javadb.sql"),

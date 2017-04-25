@@ -43,8 +43,8 @@ public class TreeServlet extends HttpServlet {
                 //getting POST parameters from form
                 String id = request.getParameter("id");
                 String name = request.getParameter("name");
-                String type = request.getParameter("type");
-                String isProtected = request.getParameter("protected");
+                String type = request.getParameter("treeType");
+                String isProtected = request.getParameter("isProtected");
                 //form data validity check
                 if (name == null || name.length() == 0 || type == null || type.length() == 0) {
                     request.setAttribute("chyba", "Je nutné vyplnit všechny hodnoty !");
