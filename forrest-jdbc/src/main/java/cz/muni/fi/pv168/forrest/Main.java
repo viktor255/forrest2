@@ -42,10 +42,13 @@ public class Main {
         allTrees = treeManager.findAllTrees();
         System.out.println("allTrees = " + allTrees);
 
-//        PotManager potManager = new PotManagerImpl(dataSource);
-//
-//        List<Pot> allPots = potManager.findAllPots();
-//        System.out.println("allPots = " + allPots);
+        PotManager potManager = new PotManagerImpl(dataSource);
+
+        List<Pot> allPots = potManager.findAllPots();
+        System.out.println("allPots = " + allPots);
+        potManager.createPot(new Pot(1,1,2 ,"test pot"));
+        allPots = potManager.findAllPots();
+        System.out.println("allPots = " + allPots);
 
     }
 }
