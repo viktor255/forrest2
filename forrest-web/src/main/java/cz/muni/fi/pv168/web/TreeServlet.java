@@ -15,7 +15,6 @@ import java.io.IOException;
 /**
  * Servlet for managing trees.
  *
- * @author Martin Kuba makub@ics.muni.cz
  */
 @WebServlet(TreeServlet.URL_MAPPING + "/*")
 public class TreeServlet extends HttpServlet {
