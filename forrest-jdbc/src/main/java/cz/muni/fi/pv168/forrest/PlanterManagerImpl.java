@@ -1,8 +1,11 @@
 package cz.muni.fi.pv168.forrest;
 
-import cz.muni.fi.pv168.forrest.common.DBUtils;
-import cz.muni.fi.pv168.forrest.common.IllegalEntityException;
-import cz.muni.fi.pv168.forrest.common.ServiceFailureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -10,262 +13,120 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class PlanterManagerImpl implements PlanterManager {
 
+    final static Logger logger = LoggerFactory.getLogger(PlanterManagerImpl.class);
 
-    private static final Logger logger = Logger.getLogger(
-            PotManagerImpl.class.getName());
-
-    private DataSource dataSource;
-
-    public PlanterManagerImpl() {
-    }
+    private JdbcTemplate jdbc;
+    private TreeManager treeManager;
+    private PotManager potManager;
 
     public PlanterManagerImpl(DataSource dataSource) {
-        this.dataSource = dataSource;
+        this.jdbc = new JdbcTemplate(dataSource);
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public void setTreeManager(TreeManager treeManager) {
+        this.treeManager = treeManager;
     }
 
-    private void checkDataSource() {
-        if (dataSource == null) {
-            throw new IllegalStateException("DataSource is not set");
-        }
-    }
-
-    @Override
-    public Pot findPotWithTree(Tree tree) throws ServiceFailureException, IllegalEntityException {
-        checkDataSource();
-        if (tree == null) {
-            throw new IllegalArgumentException("tree is null");
-        }
-        if (tree.getId() == null) {
-            throw new IllegalEntityException("tree id is null");
-        }
-        Connection conn = null;
-        PreparedStatement st = null;
-        try {
-            conn = dataSource.getConnection();
-            st = conn.prepareStatement(
-                    "SELECT Pot.potId, row, collumn, capacity, note " +
-                            "FROM Pot JOIN Tree ON Pot.potId = Tree.potId " +
-                            "WHERE Tree.id = ?");
-            st.setLong(1, tree.getId());
-            return new Pot(1L,1, 1,1, "sdf");
-//            return PotManagerImpl.executeQueryForSinglePot(st);
-        } catch (SQLException ex) {
-            String msg = "Error when trying to find pot with tree " + tree;
-            logger.log(Level.SEVERE, msg, ex);
-            throw new ServiceFailureException(msg, ex);
-        } finally {
-            DBUtils.closeQuietly(conn, st);
-        }
+    public void setPotManager(PotManager potManager) {
+        this.potManager = potManager;
     }
 
     @Override
-    public List<Tree> findTreesInPot(Pot pot) throws ServiceFailureException, IllegalEntityException {
-        checkDataSource();
-        if (pot == null) {
-            throw new IllegalArgumentException("pot is null");
-        }
-        if (pot.getId() == null) {
-            throw new IllegalEntityException("pot id is null");
-        }
-        Connection conn = null;
-        PreparedStatement st = null;
-        try {
-            conn = dataSource.getConnection();
-            st = conn.prepareStatement(
-                    "SELECT Tree.treeId, name, treeType, isProtected " +
-                            "FROM Tree JOIN Pot ON Pot.id = Tree.potId " +
-                            "WHERE Pot.id = ?");
-            st.setLong(1, pot.getId());
-            return new ArrayList<Tree>(){{add(new Tree());}};
-            //return TreeManagerImpl.executeQueryForMultipleTrees(st);
-        } catch (SQLException ex) {
-            String msg = "Error when trying to find trees in pot " + pot;
-            logger.log(Level.SEVERE, msg, ex);
-            throw new ServiceFailureException(msg, ex);
-        } finally {
-            DBUtils.closeQuietly(conn, st);
-        }
+    public Pot findPotWithTree(Tree tree) {
+        return jdbc.queryForObject(
+                "SELECT * FROM PLANTERS WHERE treeId=?",
+                (rs, rowNum) -> {
+                    long potId = rs.getLong("potId");
+                    Pot pot = null;
+                    try {
+                        pot = potManager.findPotById(potId);
+                    } catch (PotException e) {
+                        logger.error("cannot find pot", e);
+                    }
+                    return pot;
+                },
+                tree.getId());
     }
 
     @Override
-    public List<Tree> findUnplantedTrees() throws ServiceFailureException {
-        checkDataSource();
-        Connection conn = null;
-        PreparedStatement st = null;
-        try {
-            conn = dataSource.getConnection();
-            st = conn.prepareStatement(
-                    "SELECT id, name, treeType, isProtected " +
-                            "FROM Tree WHERE potId IS NULL");
-            return new ArrayList<Tree>(){{add(new Tree());}};
-            //return TreeManagerImpl.executeQueryForMultipleTrees(st);
-        } catch (SQLException ex) {
-            String msg = "Error when trying to find unplanted trees";
-            logger.log(Level.SEVERE, msg, ex);
-            throw new ServiceFailureException(msg, ex);
-        } finally {
-            DBUtils.closeQuietly(conn, st);
-        }
-    }
-
-    @Override
-    public List<Pot> findEmptyPots() throws ServiceFailureException {
-        checkDataSource();
-        Connection conn = null;
-        PreparedStatement st = null;
-        try {
-            conn = dataSource.getConnection();
-            st = conn.prepareStatement(
-                    "SELECT Pot.potId, row, col, capacity, note " +
-                            "FROM Pot LEFT JOIN Tree ON Pot.id = Tree.potId " +
-                            "GROUP BY Pot.id, col, row, capacity, note " +
-                            "HAVING COUNT(Tree.id) = 0");
-            return new ArrayList<Pot>(){{add(new Pot(1L,1, 1,1, "sdf"));}};
-            //return PotManagerImpl.executeQueryForMultiplePots(st);
-        } catch (SQLException ex) {
-            String msg = "Error when trying to find empty pots";
-            logger.log(Level.SEVERE, msg, ex);
-            throw new ServiceFailureException(msg, ex);
-        } finally {
-            DBUtils.closeQuietly(conn, st);
-        }
-    }
-
-    @Override
-    public List<Pot> findPotsWithSomeFreeSpace() throws ServiceFailureException {
-        checkDataSource();
-        Connection conn = null;
-        PreparedStatement st = null;
-        try {
-            conn = dataSource.getConnection();
-            st = conn.prepareStatement(
-                    "SELECT Pot.id, row, col, capacity, note " +
-                            "FROM Pot LEFT JOIN Tree ON Pot.id = Tree.potId " +
-                            "GROUP BY Pot.id, col, row, capacity, note " +
-                            "HAVING COUNT(Tree.id) < capacity");
-            return new ArrayList<Pot>(){{add(new Pot(1L,1, 1,1, "sdf"));}};
-//            return PotManagerImpl.executeQueryForMultiplePots(st);
-        } catch (SQLException ex) {
-            String msg = "Error when trying to find pots with some free space";
-            logger.log(Level.SEVERE, msg, ex);
-            throw new ServiceFailureException(msg, ex);
-        } finally {
-            DBUtils.closeQuietly(conn, st);
-        }
-    }
-
-    @Override
-    public void putTreeIntoPot(Tree tree, Pot pot) throws ServiceFailureException, IllegalEntityException {
-        checkDataSource();
-        if (pot == null) {
-            throw new IllegalArgumentException("pot is null");
-        }
-        if (pot.getId() == null) {
-            throw new IllegalEntityException("pot id is null");
-        }
-        if (tree == null) {
-            throw new IllegalArgumentException("tree is null");
-        }
-        if (tree.getId() == null) {
-            throw new IllegalEntityException("tree id is null");
-        }
-        Connection conn = null;
-        PreparedStatement updateSt = null;
-        try {
-            conn = dataSource.getConnection();
-            // Temporary turn autocommit mode off. It is turned back on in 
-            // method DBUtils.closeQuietly(...) 
-            conn.setAutoCommit(false);
-            checkIfPotHasSpace(conn, pot);
-
-            updateSt = conn.prepareStatement(
-                    "UPDATE Tree SET potId = ? WHERE id = ? AND potId IS NULL");
-            updateSt.setLong(1, pot.getId());
-            updateSt.setLong(2, tree.getId());
-            int count = updateSt.executeUpdate();
-            if (count == 0) {
-                throw new IllegalEntityException("Tree " + tree + " not found or it is already placed in some pot");
-            }
-            DBUtils.checkUpdatesCount(count, tree, false);
-            conn.commit();
-        } catch (SQLException ex) {
-            String msg = "Error when putting tree into pot";
-            logger.log(Level.SEVERE, msg, ex);
-            throw new ServiceFailureException(msg, ex);
-        } finally {
-            DBUtils.doRollbackQuietly(conn);
-            DBUtils.closeQuietly(conn, updateSt);
-        }
-    }
-
-    private static void checkIfPotHasSpace(Connection conn, Pot pot) throws IllegalEntityException, SQLException {
-        PreparedStatement checkSt = null;
-        try {
-            checkSt = conn.prepareStatement(
-                    "SELECT capacity, COUNT(Tree.id) as treesCount " +
-                            "FROM Pot LEFT JOIN Tree ON Pot.id = Tree.potId " +
-                            "WHERE Pot.id = ? " +
-                            "GROUP BY Pot.id, capacity");
-            checkSt.setLong(1, pot.getId());
-            ResultSet rs = checkSt.executeQuery();
-            if (rs.next()) {
-                if (rs.getInt("capacity") <= rs.getInt("treesCount")) {
-                    throw new IllegalEntityException("Pot " + pot + " is already full");
+    public List<Tree> findTreesInPot(Pot pot) {
+        List<Long> ids = jdbc.queryForList(
+                "SELECT treeId FROM PLANTERS WHERE potId=?",
+                Long.class,
+                pot.getId());
+        List<Tree> trees = new ArrayList<>();
+        ids.forEach(id -> {
+                    try {
+                        trees.add(treeManager.getTree(id));
+                    } catch (TreeException e) {
+                        logger.error("cannot find tree", e);
+                    }
                 }
-            } else {
-                throw new IllegalEntityException("Pot " + pot + " does not exist in the database");
-            }
-        } finally {
-            DBUtils.closeQuietly(null, checkSt);
-        }
+        );
+        return trees;
     }
-    
+
     @Override
-    public void removeTreeFromPot(Tree tree, Pot pot) throws ServiceFailureException, IllegalEntityException {
-        checkDataSource();
-        if (pot == null) {
-            throw new IllegalArgumentException("pot is null");
-        }
-        if (pot.getId() == null) {
-            throw new IllegalEntityException("pot id is null");
-        }
-        if (tree == null) {
-            throw new IllegalArgumentException("tree is null");
-        }
-        if (tree.getId() == null) {
-            throw new IllegalEntityException("tree id is null");
-        }
-        Connection conn = null;
-        PreparedStatement st = null;
-        try {
-            conn = dataSource.getConnection();
-            // Temporary turn autocommit mode off. It is turned back on in 
-            // method DBUtils.closeQuietly(...) 
-            conn.setAutoCommit(false);
-            st = conn.prepareStatement(
-                    "UPDATE Tree SET potId = NULL WHERE id = ? AND potId = ?");
-            st.setLong(1, tree.getId());
-            st.setLong(2, pot.getId());
-            int count = st.executeUpdate();
-            DBUtils.checkUpdatesCount(count, tree, false);
-            conn.commit();
-        } catch (SQLException ex) {
-            String msg = "Error when putting tree into pot";
-            logger.log(Level.SEVERE, msg, ex);
-            throw new ServiceFailureException(msg, ex);
-        } finally {
-            DBUtils.doRollbackQuietly(conn);
-            DBUtils.closeQuietly(conn, st);
-        }
+    public List<Tree> findUnplantedTrees() {
+        return jdbc.query(
+                "SELECT id FROM TREES WHERE id NOT IN (SELECT treeId FROM PLANTERS)",
+                (rs, rowNum) -> {
+                    long treeId = rs.getLong("id");
+                    Tree tree = null;
+                    try {
+                        tree = treeManager.getTree(treeId);
+                    } catch (TreeException e) {
+                        logger.error("cannot find tree", e);
+                    }
+                    return tree;
+                }
+        );
+    }
+
+    @Override
+    public List<Pot> findEmptyPots() {
+        return jdbc.query(
+                "SELECT id FROM POT WHERE id NOT IN (SELECT potId FROM PLANTERS)",
+                (rs, rowNum) -> {
+                    long potId = rs.getLong("id");
+                    Pot pot = null;
+                    try {
+                        pot = potManager.findPotById(potId);
+                    } catch (PotException e) {
+                        logger.error("cannot find tree", e);
+                    }
+                    return pot;
+                }
+        );
+    }
+
+    @Override
+    public List<Pot> findPotsWithSomeFreeSpace() {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void putTreeIntoPot(Tree tree, Pot pot) {
+        SimpleJdbcInsert insertPlanter = new SimpleJdbcInsert(jdbc).withTableName("PLANTERS").usingGeneratedKeyColumns("id");
+        Map<String, Object> parameters = new HashMap<>(2);
+        parameters.put("treeId", tree.getId());
+        parameters.put("potId", pot.getId());
+        insertPlanter.executeAndReturnKey(parameters);
+    }
+
+    private static void checkIfPotHasSpace(Connection conn, Pot pot) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void removeTreeFromPot(Tree tree, Pot pot) {
+
     }
 }

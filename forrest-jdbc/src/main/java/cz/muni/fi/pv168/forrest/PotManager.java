@@ -13,7 +13,7 @@ public interface PotManager {
      *
      * @param pot pot to be created.
      */
-    void createPot(Pot pot);
+    void createPot(Pot pot) throws PotException;
 
 
     /**
@@ -21,14 +21,14 @@ public interface PotManager {
      *
      * @param pot updated pot to be stored into database.
      */
-    void updatePot(Pot pot);
+    void updatePot(Pot pot) throws PotException;
 
     /**
      * Deletes pot from database.
      *
      * @param pot pot to be deleted from db.
      */
-    void deletePot(Pot pot);
+    void deletePot(Pot pot) throws PotException;
 
     /**
      * Returns list of all pots in the database.
@@ -43,7 +43,7 @@ public interface PotManager {
      * @param id given id.
      * @return Pot with given id.
      */
-    Pot findPotById(Long id);
+    Pot findPotById(Long id) throws PotException;
 
 
 

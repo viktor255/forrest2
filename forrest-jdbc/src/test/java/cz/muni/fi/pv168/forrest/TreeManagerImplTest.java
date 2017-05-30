@@ -10,6 +10,11 @@ import cz.muni.fi.pv168.forrest.common.ValidationException;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -17,6 +22,9 @@ import static org.mockito.Mockito.*;
 /**
  * @author Jakub Bohos 422419
  */
+@RunWith(SpringJUnit4ClassRunner.class) //Spring se zúčastní unit testů
+@ContextConfiguration(classes = {MySpringTestConfig.class}) //konfigurace je ve třídě MySpringTestConfig
+@Transactional //každý test poběží ve vlastní transakci, která bude na konci rollbackována
 public class TreeManagerImplTest {
 
     private TreeManagerImpl manager;
