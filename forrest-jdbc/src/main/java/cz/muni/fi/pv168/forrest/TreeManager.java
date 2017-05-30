@@ -14,28 +14,28 @@ public interface TreeManager {
      *
      * @param tree grave to be created.
      */
-    void createTree(Tree tree);
+    void createTree(Tree tree) throws TreeException;
 
     /**
      * Returns tree with given id.
      *
      * @param id primary key of requested tree.
      */
-    Tree getTree(Long id);
+    Tree getTree(Long id) throws TreeException;
 
     /**
      * Updates tree in database.
      *
      * @param tree updated tree to be stored into database.
      */
-    void updateTree(Tree tree);
+    void updateTree(Tree tree) throws TreeException;
 
     /**
      * Deletes tree from database.
      *
      * @param tree tree to be deleted from db.
      */
-    void deleteTree(Tree tree);
+    void deleteTree(Tree tree) throws TreeException;
 
     /**
      * Returns list of all trees in the database.

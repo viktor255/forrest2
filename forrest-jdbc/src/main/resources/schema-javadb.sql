@@ -16,21 +16,8 @@ CREATE TABLE TREES (
   ISPROTECTED  BOOLEAN
 );
 
--- CREATE TABLE leases (
---   id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
---   bookId      INT REFERENCES books (id)
---     ON DELETE CASCADE,
---   customerId  INT REFERENCES customers (id)
---     ON DELETE CASCADE,
---   startDate   DATE,
---   expectedEnd DATE,
---   realEnd     DATE
--- );
-
--- CREATE TABLE trees (
---   id  INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
---   --   "POTID" BIGINT REFERENCES POT (ID),
---   name VARCHAR(255) NOT NULL,
---   treetype VARCHAR(6) NOT NULL,
---   isprotected BOOLEAN NOT NULL
--- );
+CREATE TABLE PLANTERS (
+  id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  potId      INT REFERENCES POT (ID) ON DELETE CASCADE,
+  treeId  INT REFERENCES TREES (ID) ON DELETE CASCADE
+);

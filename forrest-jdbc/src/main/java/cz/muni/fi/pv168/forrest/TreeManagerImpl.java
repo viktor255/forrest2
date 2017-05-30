@@ -18,10 +18,6 @@ public class TreeManagerImpl implements TreeManager {
         this.jdbc = new JdbcTemplate(dataSource);
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.jdbc = new JdbcTemplate(dataSource);
-    }
-
     @Override
     public void createTree(Tree tree) {
         SimpleJdbcInsert insertTree = new SimpleJdbcInsert(jdbc).withTableName("trees").usingGeneratedKeyColumns("id");
